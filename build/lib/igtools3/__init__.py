@@ -5,34 +5,54 @@ import json, requests, os
 from bs4 import BeautifulSoup as bs
 
 class Session:
+	is_login = False
 	def __init__(self):
 		self.is_login = False
 		self.s = sess()
 		self.base = "https://instagram.com"
 		self.url = self.base + "/accounts/login/ajax"
 		self.csrf = self.s.get(self.base).cookies["csrftoken"]
-		self.header = {
-			'origin':'https://www.instgram.com',
-			'pragma':'no-cache',
-			'referer':'https://www.instagram.com/account/login/',
-			'user-agent':randomAgent(),
-			'x-csrftoken':self.csrf,
-			'x-requested-with':'XMLHttpRequest'
+
+	def _default_header(self):
+		head = {
+			'Accept-Encoding': 'gzip, deflate',
+			'Accept-Language': 'en-US,en;q=0.8',
+			'Connection': 'keep-alive',
+			'Content-Length': '0',
+			'Host': 'www.instagram.com',
+			'Origin': 'https://www.instagram.com',
+			'Referer': 'https://www.instagram.com/',
+			'User-Agent': randomAgent(),
+			'X-Instagram-AJAX': '1',
+                  'X-Requested-With': 'XMLHttpRequest'
 		}
+		return head
+
+	def _default_cookies(self):
+		kuki = {'sessionid': '', 'mid': '', 'ig_pr': '1',
+		'ig_vw': '1920', 'ig_cb': '1', 'csrftoken': '',
+		's_network': '', 'ds_user_id': ''}
+		return kuki
 
 	def login(self, user, pwd):
+		global j
 		"Login Tools (No Tested)"
-		data = {"username":user, "password":pwd,'queryParams':'{}'}
-		self.s.headers = self.header
+		header = self._default_header()
+		self.s.cookies.update(self._default_cookies())
+		self.s.headers.update(header)
+		self.s.get(self.base)
+		csrf = self.s.cookies.get_dict()['csrftoken']
+		self.s.headers.update({'X-CSRFToken': csrf})
+		data = {"username": user, "password":pwd}
+		request = self.s.post(self.url, data=data, allow_redirects=True)
+		print (request.text)
 		try:
-			login = self.s.post(self.url, data=data)
-			if '"authenticated": true' in login.text:
-				self.is_login = True
-				return True
-			else:
-				raise LoginError("Failed Login")
-		except requests.execption.ConnectionError:
-			raise ConnectionError("No Connection, Plase Turn On Your Connection or Check")
+			j = json.loads(request.text)
+		except json.decoder.JSONDecodeError:
+			raise LoginError("Failed Login")
+		if j["status"] == "ok":
+			self.is_login = True
+			self.s.headers.update({'X-CSRFToken': request.cookies['csrftoken']})
 
 	def get_info(self, name):
 		" Get Info Account (Tested)"
@@ -88,9 +108,7 @@ class Session:
 		self.s.headers = {"User-Agent":randomAgent()}
 		r = self.s.get(url)
 		b = bs(r.text, "html.parser")
-		print (b)
 		for ul in b.findAll("ul", {"class":"users"}):
-			print ("Mencari")
-			a = ul.findAll("a")["href"]
-			print (a)
+			a = (str(ul).findAll("a")["href"]).replace("/", "")
+			print (str(a))
 		return data

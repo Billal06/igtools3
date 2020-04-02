@@ -6,8 +6,10 @@ class LoginError(ValueError):
 class FileError(ValueError):
 	pass
 
+# Url Error or Url not found
 class URLError(ValueError):
 	pass
 
+# If your connection is null
 class ConnectionError(ValueError):
 	pass
