@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'igtools3',         # How you named your package folder (MyLib)
   packages = ['igtools3'],   # Chose the same as "name"
-  version = '0.4',      # Start with a small number and increase it with every change you make
+  version = '0.7',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Simple Instagram Tools and Scrap',   # Give a short description about your library
   author = 'Billal Fauzan',                   # Type in your name
